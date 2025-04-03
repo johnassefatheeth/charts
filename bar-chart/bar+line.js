@@ -284,64 +284,64 @@ class CompositeChart {
     });
   }
 
-  animate(newBarData, newLineDataArrays) {
-    const duration = this.options.animationDuration;
-    const frameRate = 60;
-    const totalFrames = (duration / 1000) * frameRate;
-    let currentFrame = 0;
+animate(newBarData, newLineDataArrays) {
+  const duration = this.options.animationDuration;
+  const frameRate = 60;
+  const totalFrames = (duration / 1000) * frameRate;
+  let currentFrame = 0;
 
-    const oldBarData = [...this.barData];
-    const oldLineDataArrays = this.lineDataArrays.map((data) => [...data]);
+  const oldBarData = [...this.barData];
+  const oldLineDataArrays = this.lineDataArrays.map((data) => [...data]);
 
-    if (newBarData.length < oldBarData.length || duration <= 0) {
-      this.barData = newBarData.map(Number);
-      this.lineDataArrays = newLineDataArrays.map((arr) => arr.map(Number));
+  // If the number of bars has changed OR duration is ≤ 0, update immediately
+  if (newBarData.length !== oldBarData.length || duration <= 0) {
+    this.barData = newBarData.map(Number);
+    this.lineDataArrays = newLineDataArrays.map(arr => arr.map(Number));
+    this.draw();
+    return;
+  }
+
+  // [Optional: if the data hasn’t changed, redraw immediately]
+  if (
+    JSON.stringify(oldBarData) === JSON.stringify(newBarData) &&
+    JSON.stringify(oldLineDataArrays) === JSON.stringify(newLineDataArrays)
+  ) {
+    this.barData = newBarData;
+    this.lineDataArrays = newLineDataArrays;
+    this.draw();
+    return;
+  }
+
+  const animateStep = () => {
+    if (currentFrame <= totalFrames) {
+      this.barData = oldBarData.map((startValue, index) => {
+        const endValue = newBarData[index];
+        const delta = endValue - startValue;
+        return startValue + (delta * currentFrame) / totalFrames;
+      });
+
+      this.lineDataArrays = oldLineDataArrays.map(
+        (oldLineData, datasetIndex) =>
+          oldLineData.map((startValue, index) => {
+            const endValue = newLineDataArrays[datasetIndex][index];
+            const delta = endValue - startValue;
+            return startValue + (delta * currentFrame) / totalFrames;
+          })
+      );
+
       this.draw();
-      return;
-    }
-
-    if (
-      JSON.stringify(oldBarData) === JSON.stringify(newBarData) &&
-      JSON.stringify(oldLineDataArrays) === JSON.stringify(newLineDataArrays)
-    ) {
+      currentFrame++;
+      requestAnimationFrame(animateStep);
+    } else {
       this.barData = newBarData;
       this.lineDataArrays = newLineDataArrays;
       this.draw();
-      return;
     }
+  };
 
-    const animateStep = () => {
-      if (currentFrame <= totalFrames) {
-        this.barData = oldBarData.map((startValue, index) => {
-          const endValue = newBarData[index];
-          const delta = endValue - startValue;
-          return (startValue + (delta * currentFrame) / totalFrames).toFixed(2);
-        });
+  animateStep();
+}
 
-        this.lineDataArrays = oldLineDataArrays.map(
-          (oldLineData, datasetIndex) =>
-            oldLineData.map((startValue, index) => {
-              const endValue = newLineDataArrays[datasetIndex][index];
-              const delta = endValue - startValue;
-              return (
-                startValue +
-                (delta * currentFrame) / totalFrames
-              ).toFixed(2);
-            }),
-        );
-
-        this.draw();
-        currentFrame++;
-        requestAnimationFrame(animateStep);
-      } else {
-        this.barData = newBarData;
-        this.lineDataArrays = newLineDataArrays;
-        this.draw();
-      }
-    };
-
-    animateStep();
-  }
 
   handleMouseMove(event) {
     const rect = this.canvas.getBoundingClientRect();
