@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced LineChart Example</title>
+  <style>
+    #chart-container {
+      width: 80%;
+      height: 400px;
+      margin: 20px auto;
+      border: 1px solid #ccc;
+    }
+    #tooltip {
+      position: absolute;
+      display: none;
+      background-color: #fff;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #333;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #legend-container {
+      margin: 20px auto;
+      text-align: center;
+    }
+    .button-container {
+      text-align: center;
+      margin: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">Advanced LineChart Example</h1>
+  <div id="chart-container">
+    <div id="tooltip"></div>
+  </div>
+  <div id="legend-container"></div>
+  <div class="button-container">
+    <button onclick="updateData()">Update Data</button>
+    <button onclick="animateChart()">Animate Chart</button>
+    <button onclick="toggleGridLines()">Toggle Grid Lines</button>
+    <button onclick="toggleAxisLines()">Toggle Axis Lines</button>
+  </div>
+
+  <script src="LineChart.js"></script>
+  <script>
+    // Initialize the chart with multiple datasets
+    const initialData = [
+      [10, 20, 30, 40, 50], // First line
+      [15, 25, 35, 45, 55], // Second line
+      [12, 22, 32, 42, 52]  // Third line
+    ];
+
+    const options = {
+      lineColors: ['red', 'blue', 'green'], // Different colors for each dataset
+      lineWidth: 3,
+      gridLineThickness: 0.5,
+      showGridLines: true,
+      showAxisLines: true,
+      displayLegend: true,
+      animationDuration: 1500,
+      axisColor: 'blue',
+      axisThickness: 3
+    };
+
+    const chart = new LineChart(
+      'chart-container',
+      'chart-canvas',
+      'tooltip',
+      'legend-container',
+      initialData,
+      options
+    );
+
+    // Function to update the chart with new random data
+    function updateData() {
+      const newData = [
+        Array.from({ length: 5 }, () => Math.floor(Math.random() * 100)),
+        Array.from({ length: 5 }, () => Math.floor(Math.random() * 100)),
+        Array.from({ length: 5 }, () => Math.floor(Math.random() * 100))
+      ];
+      chart.datasets = newData;
+      chart.draw();
+    }
+
+    // Function to animate the chart with new random data
+    function animateChart() {
+      const newData = [
+        Array.from({ length: 5 }, () => Math.floor(Math.random() * 100) * (Math.random() > 0.5 ? -1 : 1)),
+        Array.from({ length: 5 }, () => Math.floor(Math.random() * 100)),
+        Array.from({ length: 5 }, () => Math.floor(Math.random() * 100))
+      ];
+      chart.animate(newData);
+    }
+
+    // Function to toggle grid lines
+    function toggleGridLines() {
+      chart.options.showGridLines = !chart.options.showGridLines;
+      chart.draw();
+    }
+
+    // Function to toggle axis lines
+    function toggleAxisLines() {
+      chart.options.showAxisLines = !chart.options.showAxisLines;
+      chart.draw();
+    }
+  </script>
+</body>
+</html>
