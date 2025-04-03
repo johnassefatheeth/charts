@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Composite Chart Test</title>
+    <style>
+      body {
+        margin: 20px;
+      }
+      #chart-container {
+        width: 80vw;
+        max-width: 1000px;
+        height: 60vh;
+        min-height: 300px;
+        margin-bottom: 20px;
+        /* width: 800px; */
+        /* max-width: 1000px; */
+        /* height: 500px; */
+        /* position: relative;
+      border: 1px solid #ccc; */
+      }
+      #chart-tooltip {
+        position: absolute;
+        display: none;
+        background-color: #fff;
+        padding: 8px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+        color: #333;
+        pointer-events: none;
+      }
+      #chart-legend {
+        margin-top: 20px;
+      }
+      .dataset-buttons {
+        margin-top: 20px;
+      }
+      .dataset-buttons button {
+        margin-right: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <h1>Composite Chart Test</h1> -->
+    <div id="chart-container">
+      <canvas id="chart-canvas"></canvas>
+      <div id="chart-tooltip"></div>
+    </div>
+    <div id="chart-legend"></div>
+
+    <div class="dataset-buttons">
+      <button onclick="animateToDataset(0)">Dataset 1</button>
+      <button onclick="animateToDataset(1)">Dataset 2</button>
+      <button onclick="animateToDataset(2)">Dataset 3</button>
+      <button onclick="animateToDataset(3)">Dataset 4</button>
+      <button onclick="animateToDataset(4)">Dataset 5</button>
+    </div>
+
+    <script src="bar+line.js"></script>
+    <script>
+      // Sample data for testing
+      const datasets = [
+        {
+          barData: [30, 50, 70, 40, 60], // Bar chart data
+          lineDataArrays: [
+            [15, 25, 35, 45, 55], // Line dataset 1
+            [20, 30, 40, 50, 60], // Line dataset 2
+            [10, 20, 30, 40, 50], // Line dataset 3
+          ],
+        },
+        {
+          barData: [40, 60, 80, 50, 70], // Bar chart data
+          lineDataArrays: [
+            [25, 35, 45, 55, 65], // Line dataset 1
+            [30, 40, 50, 60, 70], // Line dataset 2
+            [20, 30, 40, 50, 60], // Line dataset 3
+          ],
+        },
+        {
+          barData: [20, 40, 60, 30, 50], // Bar chart data
+          lineDataArrays: [
+            [10, 20, 30, 40, 50], // Line dataset 1
+            [15, 25, 35, 45, 55], // Line dataset 2
+            [5, 15, 25, 35, 45], // Line dataset 3
+          ],
+        },
+        {
+          barData: [50, 70, 90, 60, 80, 50, 70, 90, 60, 80, 50, 70, 90, 60, 80], // Bar chart data
+          lineDataArrays: [
+            [
+              50, 70, 90, 60, 80, 50, 70, 90, 60, 80, 50, 70, 90, 60, 80, 50,
+              70, 90, 60, 80,
+            ], // Line dataset 1
+            [
+              40, 50, 60, 70, 80, 40, 50, 60, 70, 80, 40, 50, 60, 70, 80, 40,
+              50, 60, 70, 80,
+            ], // Line dataset 2
+            [
+              30, 40, 50, 60, 70, 30, 40, 50, 60, 70, 30, 40, 50, 60, 70, 30,
+              40, 50, 60, 70,
+            ], // Line dataset 3
+          ],
+        },
+        {
+          barData: [10, 30, 50, -20, 40], // Bar chart data
+          lineDataArrays: [
+            [5, -15, 25, 35, 45], // Line dataset 1
+            [10, 20, -30, 40, 50], // Line dataset 2
+            [0, 10, 20, 30, -40], // Line dataset 3
+          ],
+        },
+      ];
+
+      // Create the chart with the first dataset
+      const chart = new CompositeChart(
+        "chart-container", // Container ID
+        "chart-canvas", // Canvas ID
+        "chart-tooltip", // Tooltip ID
+        "chart-legend", // Legend container ID
+        datasets[0].barData, // Bar data
+        datasets[0].lineDataArrays, // Line datasets
+        {
+          // width: 800, // Custom width
+          // height: 500, // Custom height
+          padding: 100, // Custom padding
+          lineColors: ["yellow", "blue", "green"], // Custom line colors
+          barColor: "#345", // Custom bar color
+          showGridLines: true, // Show grid lines
+          showAxisLines: true, // Show axis lines
+          displayLegend: true, // Display legend
+          animationDuration: 1000, // Animation duration
+          font: "12px Times New Roman", // Font style
+        },
+      );
+
+      // Function to animate to a specific dataset
+      function animateToDataset(index) {
+        if (index >= 0 && index < datasets.length) {
+          const newBarData = datasets[index].barData;
+          const newLineDataArrays = datasets[index].lineDataArrays;
+          chart.animate(newBarData, newLineDataArrays);
+        }
+      }
+    </script>
+  </body>
+</html>
