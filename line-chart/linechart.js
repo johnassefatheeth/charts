@@ -8,7 +8,14 @@ class LineChart {
    * @param {number[][]} dataArrays - Array of data arrays (each array represents a dataset).
    * @param {object} options - Configuration options.
    */
-  constructor(containerId, canvasId, tooltipId, legendContainerId, dataArrays, options = {}) {
+  constructor(
+    containerId,
+    canvasId,
+    tooltipId,
+    legendContainerId,
+    dataArrays,
+    options = {},
+  ) {
     this.containerId = containerId;
     this.tooltipId = tooltipId;
     this.legendContainerId = legendContainerId;
@@ -18,10 +25,10 @@ class LineChart {
     this.hoverDatasetIndex = -1; // Track which dataset is hovered
 
     // Create and append canvas
-    this.canvas = document.createElement('canvas');
+    this.canvas = document.createElement("canvas");
     this.canvas.id = canvasId;
     document.getElementById(containerId).appendChild(this.canvas);
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext("2d");
 
     // Initialize
     this.init();
@@ -32,29 +39,32 @@ class LineChart {
     width: 600,
     height: 400,
     padding: 100,
-    axisColor: '#121212',
-    gridLineColor: '#ccc',
+    axisColor: "#121212",
+    gridLineColor: "#ccc",
     gridLineThickness: 1,
     axisThickness: 2,
-    lineColors: ['yellow', 'blue', 'green', 'red'], // Array of colors for each dataset
+    lineColors: ["yellow", "blue", "green", "red"], // Array of colors for each dataset
     lineWidth: 2,
-    pointColor: '#345',
-    hoverPointColor: 'red',
-    labelColor: 'green',
-    xLabelColor: 'gray',
-    font: '16px Arial',
-    tooltipBackgroundColor: '#fff',
-    tooltipFont: '14px Arial',
-    tooltipTextColor: '#333',
+    showLinePoints: true,
+    pointRadius: 3,
+    pointHoverRadius: 5,
+    pointColor: "#345",
+    hoverPointColor: "red",
+    labelColor: "green",
+    xLabelColor: "gray",
+    font: "16px Arial",
+    tooltipBackgroundColor: "#fff",
+    tooltipFont: "14px Arial",
+    tooltipTextColor: "#333",
     animationDuration: 1000,
     displayLegend: true,
-    legendFont: '14px Arial',
-    legendColor: '#000',
+    legendFont: "14px Arial",
+    legendColor: "#000",
     numIntervals: 5,
     showGridLines: true,
     showAxisLines: true,
-    legendFontSize: '14px', 
-    tooltipFontSize: '14px',
+    legendFontSize: "14px",
+    tooltipFontSize: "14px",
   };
 
   /**
@@ -62,8 +72,8 @@ class LineChart {
    */
   init() {
     this.resizeCanvas();
-    this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-    this.canvas.addEventListener('mouseout', () => this.handleMouseOut());
+    this.canvas.addEventListener("mousemove", (e) => this.handleMouseMove(e));
+    this.canvas.addEventListener("mouseout", () => this.handleMouseOut());
     this.draw();
   }
 
@@ -130,16 +140,14 @@ class LineChart {
       this.ctx.stroke();
     }
     for (let i = 0; i <= numIntervals; i++) {
-      
       const y = padding + ((chartHeight - 2 * padding) / numIntervals) * i;
       const value = (maxValue - i * intervalValue).toFixed(2);
-
 
       // Draw the y-axis label.
       this.ctx.fillStyle = this.options.labelColor;
       this.ctx.font = this.options.font;
-      this.ctx.textAlign = 'right';
-      this.ctx.textBaseline = 'middle';
+      this.ctx.textAlign = "right";
+      this.ctx.textBaseline = "middle";
       this.ctx.fillText(value, padding - 10, y);
     }
 
@@ -156,12 +164,12 @@ class LineChart {
         this.ctx.strokeStyle = this.options.gridLineColor;
         this.ctx.lineWidth = this.options.gridLineThickness;
         this.ctx.stroke();
-
-        
       }
       // Draw vertical grid lines (for X-axis)
       for (let i = 0; i < this.dataArrays[0].length; i++) {
-        const x = padding + ((chartWidth - 2 * padding) / (this.dataArrays[0].length - 1)) * i;
+        const x =
+          padding +
+          ((chartWidth - 2 * padding) / (this.dataArrays[0].length - 1)) * i;
         this.ctx.beginPath();
         this.ctx.moveTo(x, padding);
         this.ctx.lineTo(x, chartHeight - padding);
@@ -186,47 +194,87 @@ class LineChart {
 
       this.ctx.fillStyle = this.options.xLabelColor;
       this.ctx.font = this.options.font;
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'top';
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "top";
       this.ctx.fillText(`Data${i + 1}`, x, y + 10);
     }
 
     // ---------- Draw the Lines Connecting the Data Points for Each Dataset ----------
-    this.dataArrays.forEach((data, datasetIndex) => {
-      this.ctx.beginPath();
-      this.ctx.moveTo(
-        padding,
-        chartHeight - padding - ((data[0] - minValue) / valueRange) * (chartHeight - 2 * padding)
-      );
+    if (this.dataArrays.length > 0 && this.dataArrays[0].length > 1) {
+      const xStepLine =
+        (chartWidth - 2 * padding) / (this.dataArrays[0].length - 1);
 
-      for (let i = 1; i < data.length; i++) {
-        const x = padding + xStep * i;
-        const y = chartHeight - padding - ((data[i] - minValue) / valueRange) * (chartHeight - 2 * padding);
-        this.ctx.lineTo(x, y);
-      }
+      this.dataArrays.forEach((data, datasetIndex) => {
+        if (!Array.isArray(data) || data.length === 0) return;
 
-      // Set the stroke style and line width for the current dataset.
-      this.ctx.strokeStyle = this.options.lineColors[datasetIndex % this.options.lineColors.length];
-      this.ctx.lineWidth = this.options.lineWidth;
-      this.ctx.stroke();
-    });
-
-    // ---------- Draw Data Points for Each Dataset ----------
-    this.dataArrays.forEach((data, datasetIndex) => {
-      for (let i = 0; i < data.length; i++) {
-        const x = padding + xStep * i;
-        const y = chartHeight - padding - ((data[i] - minValue) / valueRange) * (chartHeight - 2 * padding);
-
-        // Highlight the data point if it is hovered.
-        this.ctx.fillStyle =
-          i === this.hoverIndex && datasetIndex === this.hoverDatasetIndex
-            ? this.options.pointColor
-            : this.options.pointColor;
+        const lineColor =
+          this.options.lineColors[
+            datasetIndex % this.options.lineColors.length
+          ];
+        this.ctx.strokeStyle = lineColor;
+        this.ctx.lineWidth = this.options.lineWidth;
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
-        this.ctx.fill();
-      }
-    });
+
+        let firstValidPoint = true;
+        for (let i = 0; i < data.length; i++) {
+          if (typeof data[i] !== "number" || isNaN(data[i])) {
+            firstValidPoint = true;
+            continue;
+          }
+
+          const x = padding + xStepLine * i;
+          const y =
+            chartHeight -
+            padding -
+            (valueRange === 0
+              ? 0
+              : ((data[i] - minValue) / valueRange) *
+                (chartHeight - 2 * padding));
+
+          if (firstValidPoint) {
+            this.ctx.moveTo(x, y);
+            firstValidPoint = false;
+          } else {
+            this.ctx.lineTo(x, y);
+          }
+        }
+        this.ctx.stroke();
+
+        // --- Draw Data Point (Dot) ONLY at the hovered index --- <<< SNIPPET START >>>
+        if (this.options.showLinePoints) {
+          for (let i = 0; i < data.length; i++) {
+            const pointValue = data[i];
+            if (typeof pointValue !== "number" || isNaN(pointValue)) {
+              continue;
+            }
+
+            const x = padding + xStepLine * i;
+            const y =
+              chartHeight -
+              padding -
+              (valueRange === 0
+                ? 0
+                : ((pointValue - minValue) / valueRange) *
+                  (chartHeight - 2 * padding));
+
+            const isHovered = i === this.hoverIndex;
+
+            const radius = isHovered
+              ? this.options.pointHoverRadius
+              : this.options.pointRadius;
+
+            const pointFill = isHovered
+              ? this.options.hoverPointColor
+              : this.options.pointColor;
+
+            this.ctx.fillStyle = pointFill;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            this.ctx.fill();
+          }
+        }
+      });
+    }
 
     // Draw legend if enabled
     if (this.options.displayLegend) this.drawLegend();
@@ -236,31 +284,32 @@ class LineChart {
    * Draws the legend in the specified container.
    */
   drawLegend() {
-  const container = document.getElementById(this.legendContainerId);
-  container.innerHTML = '';
+    const container = document.getElementById(this.legendContainerId);
+    container.innerHTML = "";
 
-  this.dataArrays.forEach((data, datasetIndex) => {
-    const item = document.createElement('div');
-    item.style.display = 'flex';
-    item.style.alignItems = 'center';
-    item.style.margin = '4px 0';
+    this.dataArrays.forEach((data, datasetIndex) => {
+      const item = document.createElement("div");
+      item.style.display = "flex";
+      item.style.alignItems = "center";
+      item.style.margin = "4px 0";
 
-    const colorBox = document.createElement('div');
-    colorBox.style.width = '20px';
-    colorBox.style.height = '20px';
-    colorBox.style.backgroundColor = this.options.lineColors[datasetIndex % this.options.lineColors.length];
-    colorBox.style.marginRight = '8px';
+      const colorBox = document.createElement("div");
+      colorBox.style.width = "20px";
+      colorBox.style.height = "20px";
+      colorBox.style.backgroundColor =
+        this.options.lineColors[datasetIndex % this.options.lineColors.length];
+      colorBox.style.marginRight = "8px";
 
-    const label = document.createElement('span');
-    label.style.font = `${this.options.legendFontSize} Arial`; // Use legendFontSize
-    label.style.color = this.options.legendColor;
-    label.textContent = `Dataset ${datasetIndex + 1}`;
+      const label = document.createElement("span");
+      label.style.font = `${this.options.legendFontSize} Arial`; // Use legendFontSize
+      label.style.color = this.options.legendColor;
+      label.textContent = `Dataset ${datasetIndex + 1}`;
 
-    item.appendChild(colorBox);
-    item.appendChild(label);
-    container.appendChild(item);
-  });
-}
+      item.appendChild(colorBox);
+      item.appendChild(label);
+      container.appendChild(item);
+    });
+  }
 
   /**
    * Animates the transition from the current data to new data values.
@@ -273,34 +322,36 @@ class LineChart {
     let currentFrame = 0;
     const oldDataArrays = this.dataArrays.map((data) => [...data]); // Copy current data.
 
-    const animate = () => {
+    if (oldDataArrays[0].length !== newDataArrays[0].length || duration <= 0) {
+      this.dataArrays = newDataArrays.map((arr) => arr.map(Number));
+      this.draw();
+      return;
+    }
+
+    if (JSON.stringify(oldDataArrays) === JSON.stringify(newDataArrays)) {
+      this.dataArrays = newDataArrays;
+      this.draw();
+      return;
+    }
+
+    const animateStep = () => {
       if (currentFrame <= totalFrames) {
-        // Calculate intermediate values for each data point in each dataset.
         this.dataArrays = oldDataArrays.map((oldData, datasetIndex) =>
           oldData.map((startValue, index) => {
             const endValue = newDataArrays[datasetIndex][index];
             const delta = endValue - startValue;
             return startValue + (delta * currentFrame) / totalFrames;
-          })
+          }),
         );
         this.draw();
-
-        // Call handleMouseMove to update the tooltip position and content during the animation.
-      const rect = this.canvas.getBoundingClientRect();
-      const mouseX = rect.left + (this.hoverIndex * (this.canvas.width - 2 * this.options.padding) / (this.dataArrays[0].length - 1)) + this.options.padding;
-      const mouseY = rect.top + (this.canvas.height / 2); // Approximate Y position for the tooltip.
-      const fakeEvent = { clientX: mouseX, clientY: mouseY }; // Simulate a mouse event.
-      this.handleMouseMove(fakeEvent); 
-      currentFrame++;
-        requestAnimationFrame(animate);
+        currentFrame++;
+        requestAnimationFrame(animateStep);
       } else {
-        // After animation completes, set the data to the new data values.
-        this.dataArrays = newDataArrays;
+        this.dataArrays = newDataArrays.map((arr) => arr.map(Number));
         this.draw();
       }
     };
-
-    animate();
+    animateStep();
   }
 
   /**
@@ -309,67 +360,51 @@ class LineChart {
    */
   handleMouseMove(event) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) * (this.canvas.width / rect.width);
+    // const x = (event.clientX - rect.left) * (this.canvas.width / rect.width);
+    const logicalX = event.clientX - rect.left;
     const padding = this.options.padding;
-    const xStep = (this.canvas.width - 2 * padding) / (this.dataArrays[0].length - 1);
-    const hoverIndex = Math.round((x - padding) / xStep);
-  
-    // Ensure hoverIndex is within bounds
-    if (hoverIndex < 0 || hoverIndex >= this.dataArrays[0].length) {
-      this.hideTooltip();
-      return;
-    }
-  
-    if (hoverIndex !== this.hoverIndex) {
-      this.hoverIndex = hoverIndex;
-      this.hoverDatasetIndex = -1; // Reset dataset hover index
-  
-      // Find which dataset is being hovered
-      for (let i = 0; i < this.dataArrays.length; i++) {
-        if (hoverIndex >= 0 && hoverIndex < this.dataArrays[i].length) {
-          this.hoverDatasetIndex = i;
-          break;
-        }
+    const logicalWidth = this.canvas.width / window.devicePixelRatio;
+    const xStep =
+      (logicalWidth - 2 * padding) / (this.dataArrays[0].length - 1);
+    const threshold = 5;
+    let newHoverIndex = -1;
+    for (let i = 0; i < this.dataArrays[0].length; i++) {
+      const targetX = padding + xStep * i;
+      if (Math.abs(logicalX - targetX) < threshold) {
+        newHoverIndex = i;
+        break;
       }
-  
+    }
+
+    if (newHoverIndex !== this.hoverIndex) {
+      this.hoverIndex = newHoverIndex;
       this.draw();
-      if (this.hoverDatasetIndex !== -1) {
-        // Generate tooltip data using a loop
+      if (this.hoverIndex !== -1) {
         const tooltipData = [];
-        for (let i = 1; i < this.dataArrays.length; i++) {
-          const value = this.dataArrays[i][hoverIndex];
-          if (value !== undefined && !isNaN(value)) {
-            tooltipData.push(`Dataset ${i + 1}: ${value}`);
-          }
-        
-        }
-  
-        // Display tooltip if there is valid data
+        this.dataArrays.forEach((dataset, datasetIndex) => {
+          const value = dataset[this.hoverIndex];
+          if (value !== undefined && !isNaN(value))
+            tooltipData.push(`Dataset ${datasetIndex + 1}: ${value}`);
+        });
         if (tooltipData.length > 0) {
-          this.showTooltip(event, tooltipData.join('<br>'));
+          this.showTooltip(event, tooltipData.join("<br>"));
         } else {
           this.hideTooltip();
         }
       } else {
         this.hideTooltip();
       }
-    }
-  
-    // Update tooltip position to follow the cursor
-    if (this.hoverDatasetIndex !== -1) {
-      // Generate tooltip data using a loop
-      const tooltipData = [];
-      for (let i = 0; i < this.dataArrays.length; i++) {
-        const value = this.dataArrays[i][hoverIndex];
-        if (value !== undefined && !isNaN(value)) {
-          tooltipData.push(`Dataset ${i + 1}: ${value}`);
-        }
-      }
-  
-      // Display tooltip if there is valid data
-      if (tooltipData.length > 0) {
-        console.log(tooltipData);
-        this.showTooltip(event, tooltipData.join('<br>'));
+    } else {
+      // Update tooltip position if hover is unchanged.
+      if (this.hoverIndex !== -1) {
+        const tooltipData = [];
+        this.dataArrays.forEach((dataset, datasetIndex) => {
+          const value = dataset[this.hoverIndex];
+          if (value !== undefined && !isNaN(value))
+            tooltipData.push(`Dataset ${datasetIndex + 1}: ${value}`);
+        });
+        if (tooltipData.length > 0)
+          this.showTooltip(event, tooltipData.join("<br>"));
       }
     }
   }
@@ -390,31 +425,31 @@ class LineChart {
    * @param {number} datasetIndex - The index of the hovered dataset.
    */
   /**
- * Displays tooltip with dataset data.
- * @param {MouseEvent} event - The mouse event.
- * @param {string} tooltipContent - The content to display in the tooltip.
- */
-showTooltip(event, tooltipContent) {
-  const tooltip = document.getElementById(this.tooltipId);
-  if (!tooltip) return;
+   * Displays tooltip with dataset data.
+   * @param {MouseEvent} event - The mouse event.
+   * @param {string} tooltipContent - The content to display in the tooltip.
+   */
+  showTooltip(event, tooltipContent) {
+    const tooltip = document.getElementById(this.tooltipId);
+    if (!tooltip) return;
 
-  tooltip.style.position = 'fixed';
-  tooltip.style.left = `${event.clientX + 10}px`;
-  tooltip.style.top = `${event.clientY + 10}px`;
-  tooltip.style.backgroundColor = this.options.tooltipBackgroundColor;
-  tooltip.style.padding = '8px';
-  tooltip.style.borderRadius = '4px';
-  tooltip.style.font = `${this.options.tooltipFontSize} Arial`; // Use tooltipFontSize
-  tooltip.style.color = this.options.tooltipTextColor;
-  tooltip.innerHTML = tooltipContent;
-  tooltip.style.display = 'block';
-}
+    tooltip.style.position = "fixed";
+    tooltip.style.left = `${event.clientX + 10}px`;
+    tooltip.style.top = `${event.clientY + 10}px`;
+    tooltip.style.backgroundColor = this.options.tooltipBackgroundColor;
+    tooltip.style.padding = "8px";
+    tooltip.style.borderRadius = "4px";
+    tooltip.style.font = `${this.options.tooltipFontSize} Arial`; // Use tooltipFontSize
+    tooltip.style.color = this.options.tooltipTextColor;
+    tooltip.innerHTML = tooltipContent;
+    tooltip.style.display = "block";
+  }
 
   /**
    * Hides the tooltip.
    */
   hideTooltip() {
     const tooltip = document.getElementById(this.tooltipId);
-    if (tooltip) tooltip.style.display = 'none';
+    if (tooltip) tooltip.style.display = "none";
   }
 }
